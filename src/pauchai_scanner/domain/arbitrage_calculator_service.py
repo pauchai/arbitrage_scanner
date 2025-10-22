@@ -17,8 +17,7 @@ class ArbitrageCalculatorService:
 
     def calculate(self, quoted_assets: List[Asset], min_profit: Decimal, min_volume: Decimal) -> List[ArbitrageOpportunity]:
         opportunities = []
-        from pauchai_scanner.domain.value_objects import MarketId, MarketType
-        # Новый перебор: для каждой пары сравниваем все котировки между биржами
+        from pauchai_scanner.domain.value_objects import MarketId, MarketType, AssetInfo
         for pair, quotes in self.price_book.items():
             if pair.quote not in quoted_assets:
                 continue
@@ -26,20 +25,44 @@ class ArbitrageCalculatorService:
                 for sell_quote in quotes:
                     if buy_quote.exchange == sell_quote.exchange:
                         continue
-                    # Получаем комиссии
                     market_id_buy = MarketId(pair=pair, exchange=buy_quote.exchange, market_type=MarketType.SPOT)
                     market_id_sell = MarketId(pair=pair, exchange=sell_quote.exchange, market_type=MarketType.SPOT)
                     fee_buy = self.market_book.get(market_id_buy, None)
                     fee_sell = self.market_book.get(market_id_sell, None)
                     buy_fee = (buy_quote.ask * fee_buy.taker_fee) if (fee_buy and fee_buy.percentage) else (fee_buy.taker_fee if fee_buy else Decimal("0"))
                     sell_fee = (sell_quote.bid * fee_sell.taker_fee) if (fee_sell and fee_sell.percentage) else (fee_sell.taker_fee if fee_sell else Decimal("0"))
-                    profit = sell_quote.bid - buy_quote.ask - buy_fee - sell_fee
+                    # Комиссия сети для вывода quote-актива с биржи продажи
+                    withdraw_fee = None
+                    withdraw_speed = None
+                    sell_network = None
+                    buy_network = None
+                    asset_info = self.asset_book.get(pair.quote, None)
+                    if asset_info:
+                        # Сеть для вывода (минимальная комиссия на бирже продажи)
+                        sell_network_obj = None
+                        sell_networks = [n for n in asset_info.networks if n.exchange == sell_quote.exchange]
+                        if sell_networks:
+                            sell_network_obj = min(sell_networks, key=lambda n: n.withdraw_fee)
+                            withdraw_fee = sell_network_obj.withdraw_fee
+                            withdraw_speed = sell_network_obj.withdraw_speed
+                            sell_network = sell_network_obj.network
+                        # Сеть для ввода (минимальная комиссия на бирже покупки)
+                        buy_network_obj = None
+                        buy_networks = [n for n in asset_info.networks if n.exchange == buy_quote.exchange]
+                        if buy_networks:
+                            buy_network_obj = min(buy_networks, key=lambda n: n.withdraw_fee)
+                            buy_network = buy_network_obj.network
+                    profit = sell_quote.bid - buy_quote.ask - buy_fee - sell_fee - (withdraw_fee if withdraw_fee is not None else Decimal("0"))
                     if profit >= min_profit:
                         opportunity = ArbitrageOpportunity(
                             pair=pair,
                             buy_exchange=buy_quote.exchange,
                             sell_exchange=sell_quote.exchange,
-                            estimated_profit=profit
+                            estimated_profit=profit,
+                            buy_network=buy_network,
+                            sell_network=sell_network,
+                            withdraw_fee=withdraw_fee,
+                            withdraw_speed=withdraw_speed
                         )
                         opportunities.append(opportunity)
         return opportunities

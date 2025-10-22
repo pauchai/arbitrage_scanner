@@ -10,10 +10,12 @@ class ArbitrageOpportunity:
     buy_exchange: str
     sell_exchange: str
     estimated_profit: Decimal
-    #real_profit: Money | None = None
-    #status: str = "candidate"
-    #buy_url: str | None = None
-    #sell_url: str | None = None
-    #network: str | None = None
-    #withdraw_fee: Money | None = None
-    #withdraw_speed: float | None = None
+    # Новые поля для расширенного сервиса:
+    #real_profit: Decimal | None = None  # Фактическая прибыль
+    #status: str = "candidate"          # Статус возможности
+    #buy_url: str | None = None          # Ссылка на торговую страницу покупки
+    #sell_url: str | None = None         # Ссылка на торговую страницу продажи
+    buy_network: str | None = None      # Сеть для ввода на биржу покупки
+    sell_network: str | None = None     # Сеть для вывода с биржи продажи
+    withdraw_fee: Decimal | None = None # Комиссия сети на вывод
+    withdraw_speed: float | None = None # Скорость вывода (часы)

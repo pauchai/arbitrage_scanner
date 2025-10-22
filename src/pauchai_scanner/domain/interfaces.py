@@ -29,7 +29,7 @@ class ExchangeProvider(abc.ABC):
 
 class PriceRepository(abc.ABC):
     @abc.abstractmethod
-    async def get_pricebook(self, pairs: list[TradingPair]) -> PriceBook:
+    async def get_pricebook(self, pairs: list[TradingPair] = None) -> PriceBook:
         pass
 
     async def get_marketbook(self) -> MarketBook:

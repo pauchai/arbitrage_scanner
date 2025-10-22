@@ -11,7 +11,7 @@ class PriceRepositoryImpl(PriceRepository):
     def __init__(self, providers: list[ExchangeProvider]):
         self.providers = {type(provider).__name__: provider for provider in providers}
 
-    async def get_pricebook(self, pairs: list[TradingPair]) -> PriceBook:
+    async def get_pricebook(self, pairs: list[TradingPair] = None) -> PriceBook:
         quotes = []
         tasks = [
             provider.get_price_book(pairs)

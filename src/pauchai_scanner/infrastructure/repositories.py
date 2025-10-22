@@ -11,22 +11,27 @@ class PriceRepositoryImpl(PriceRepository):
     def __init__(self, providers: list[ExchangeProvider]):
         self.providers = {type(provider).__name__: provider for provider in providers}
 
-    async def get_pricebook(self, pairs: list[TradingPair]) -> list[Quote]:
+    async def get_pricebook(self, pairs: list[TradingPair]) -> PriceBook:
         quotes = []
-        
         tasks = [
-            provider.get_pricebook(pairs)
+            provider.get_price_book(pairs)
             for provider in self.providers.values()
         ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         for result in results:
-            if isinstance(result, list):
+            if isinstance(result, dict):
+                for pair, qs in result.items():
+                    quotes.extend(qs)
+            elif isinstance(result, list):
                 quotes.extend(result)
             else:
                 pass
 
-        return quotes
+        pricebook = {}
+        for q in quotes:
+            pricebook.setdefault(q.trading_pair, []).append(q)
+        return pricebook
 
 
 
@@ -36,10 +41,10 @@ class InMemoryPriceRepository(PriceRepository):
         self._market_book = market_book or {}
         self._asset_book = asset_book or {}
 
-    async def get_pricebook(self, pairs: List[TradingPair]) -> PriceBook:
+    async def get_pricebook(self, pairs: List[TradingPair] = None) -> PriceBook:
         pricebook = {}
         for q in self._quotes:
-            if q.trading_pair in pairs:
+            if pairs is None or q.trading_pair in pairs:
                 pricebook.setdefault(q.trading_pair, []).append(q)
         return pricebook
 

@@ -45,7 +45,7 @@ def mock_price_repository():
 async def test_find_arbitrage_opportunities(mock_price_repository):
     finder = FindArbitrageOpportunitiesUseCase(mock_price_repository)
     trading_pairs = [TradingPair.from_string("BTC/USDT"), TradingPair.from_string("ETH/USDT")]
-    opportunities = await finder.execute(trading_pairs, quoted_asset=Asset("USDT"), min_profit=Decimal('100'), min_volume=Decimal('0.01'))
+    opportunities = await finder.execute(quoted_asset=Asset("USDT"), min_profit=Decimal('100'), min_volume=Decimal('0.01'), trading_pairs=trading_pairs)
     assert isinstance(opportunities, list)
     assert len(opportunities) == 2  
     # Ожидаемая прибыль должна быть корректной
@@ -74,6 +74,6 @@ async def test_no_arbitrage_within_one_exchange(mock_price_repository):
             pass
     finder = FindArbitrageOpportunitiesUseCase(MockPriceRepository())
     trading_pairs = [TradingPair.from_string("BTC/USDT"), TradingPair.from_string("ETH/USDT")]
-    opportunities = await finder.execute(trading_pairs, quoted_asset=Asset("USDT"), min_profit=Decimal('100'), min_volume=Decimal('0.01'))
+    opportunities = await finder.execute(quoted_asset=Asset("USDT"), min_profit=Decimal('100'), min_volume=Decimal('0.01'), trading_pairs=trading_pairs)
     assert isinstance(opportunities, list)
     assert len(opportunities) == 0  # Не должно быть арбитража внутри одной биржи

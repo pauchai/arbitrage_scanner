@@ -62,7 +62,8 @@ class CCXTExchangeProvider(ExchangeProvider):
 
         return asset_book
     async def close(self):
-        await self.exchange.close()
+        if hasattr(self.exchange, "close") and callable(self.exchange.close):
+            await self.exchange.close()
 
 
 

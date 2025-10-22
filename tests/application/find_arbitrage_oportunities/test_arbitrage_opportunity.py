@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from pauchai_scanner.application.find_opportunities_usecase import FindArbitrageOpportunitiesUseCase
-from pauchai_scanner.domain.repository import PriceRepository
+from pauchai_scanner.domain.interfaces import PriceRepository
 from pauchai_scanner.domain.value_objects import Asset, Quote, TradingPair
 
 prices_with_arbitrage = [
@@ -23,8 +23,9 @@ prices_one_exchange = [
 
 @pytest.fixture
 def mock_price_repository():
-    repo = PriceRepository()
+    repo = AsyncMock()
     repo.get_quotes = AsyncMock(return_value=prices_with_arbitrage)
+    repo.get_
     return repo
 
 @pytest.mark.asyncio
@@ -48,7 +49,7 @@ async def test_find_arbitrage_opportunities(mock_price_repository):
 async def test_no_arbitrage_within_one_exchange(mock_price_repository):
     # Все quotes только с одной биржи
  
-    repo = PriceRepository()
+    repo = AsyncMock()
     repo.get_quotes = AsyncMock(return_value=prices_one_exchange)
     finder = FindArbitrageOpportunitiesUseCase(repo)
     opportunities = await finder.execute(Asset("USDT"), Decimal('100'), Decimal('0.01'))

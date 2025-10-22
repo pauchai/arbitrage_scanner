@@ -17,6 +17,7 @@ class ArbitrageCalculatorService:
 
     def calculate(self, quoted_assets: List[Asset], min_profit: Decimal, min_volume: Decimal) -> List[ArbitrageOpportunity]:
         opportunities = []
+        from pauchai_scanner.domain.value_objects import MarketId, MarketType
         # Новый перебор: для каждой пары сравниваем все котировки между биржами
         for pair, quotes in self.price_book.items():
             if pair.quote not in quoted_assets:
@@ -25,7 +26,14 @@ class ArbitrageCalculatorService:
                 for sell_quote in quotes:
                     if buy_quote.exchange == sell_quote.exchange:
                         continue
-                    profit = sell_quote.bid - buy_quote.ask
+                    # Получаем комиссии
+                    market_id_buy = MarketId(pair=pair, exchange=buy_quote.exchange, market_type=MarketType.SPOT)
+                    market_id_sell = MarketId(pair=pair, exchange=sell_quote.exchange, market_type=MarketType.SPOT)
+                    fee_buy = self.market_book.get(market_id_buy, None)
+                    fee_sell = self.market_book.get(market_id_sell, None)
+                    buy_fee = (buy_quote.ask * fee_buy.taker_fee) if (fee_buy and fee_buy.percentage) else (fee_buy.taker_fee if fee_buy else Decimal("0"))
+                    sell_fee = (sell_quote.bid * fee_sell.taker_fee) if (fee_sell and fee_sell.percentage) else (fee_sell.taker_fee if fee_sell else Decimal("0"))
+                    profit = sell_quote.bid - buy_quote.ask - buy_fee - sell_fee
                     if profit >= min_profit:
                         opportunity = ArbitrageOpportunity(
                             pair=pair,

@@ -7,7 +7,7 @@ class CCXTTickerDTO(BaseModel):
     ask: float | None
     exchange: str
 
-    class Config:
+    class ConfigDict:
         extra = "ignore"
 
 class CCXTMarketDTO(BaseModel):
@@ -17,14 +17,14 @@ class CCXTMarketDTO(BaseModel):
     taker: float | None
     percentage: bool | None
 
-    class Config:
+    class ConfigDict:
         extra = "ignore"
 
 class CCXTNetworkLimitsDTO(BaseModel):
     withdraw: dict[str, float] | None
     deposit: dict[str, float] | None
 
-    class Config:
+    class ConfigDict:
         extra = "ignore"
 class CCXTNetworkDTO(BaseModel):
     id: str
@@ -36,7 +36,7 @@ class CCXTNetworkDTO(BaseModel):
     precision: int 
     limits: CCXTNetworkLimitsDTO 
 
-    class Config:
+    class ConfigDict:
         extra = "ignore"
 
 class CCXTCurrencyDTO(BaseModel):
@@ -47,5 +47,5 @@ class CCXTCurrencyDTO(BaseModel):
     precision: int | None
     networks: list[CCXTNetworkDTO] | None
 
-    class Config:
+    class ConfigDict:
         extra = "ignore"

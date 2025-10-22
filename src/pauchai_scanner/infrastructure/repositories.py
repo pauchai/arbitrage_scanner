@@ -1,5 +1,7 @@
 import asyncio
+from typing import List
 import ccxt.async_support as ccxt
+from pauchai_scanner.domain.aggregators import AssetBook, MarketBook, PriceBook
 from pauchai_scanner.domain.value_objects import Quote, TradingPair
 from pauchai_scanner.domain.interfaces import  ExchangeProvider, PriceRepository
 
@@ -25,3 +27,27 @@ class PriceRepositoryImpl(PriceRepository):
                 pass
 
         return quotes
+
+
+
+class InMemoryPriceRepository(PriceRepository):
+    def __init__(self, quotes: List[Quote], market_book: MarketBook = None, asset_book: AssetBook = None):
+        self._quotes = quotes
+        self._market_book = market_book or {}
+        self._asset_book = asset_book or {}
+
+    async def get_pricebook(self, pairs: List[TradingPair]) -> PriceBook:
+        pricebook = {}
+        for q in self._quotes:
+            if q.trading_pair in pairs:
+                pricebook.setdefault(q.trading_pair, []).append(q)
+        return pricebook
+
+    async def get_marketbook(self) -> MarketBook:
+        return self._market_book
+
+    async def get_assetbook(self) -> AssetBook:
+        return self._asset_book
+
+    async def close(self):
+        pass

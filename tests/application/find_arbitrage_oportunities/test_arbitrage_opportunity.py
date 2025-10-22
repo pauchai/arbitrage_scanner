@@ -6,32 +6,46 @@ from pauchai_scanner.application.find_opportunities_usecase import FindArbitrage
 from pauchai_scanner.domain.interfaces import PriceRepository
 from pauchai_scanner.domain.value_objects import Asset, Quote, TradingPair
 
-prices_with_arbitrage = [
-    # ExchangeA
-    Quote(TradingPair.from_string("BTC/USDT"), Decimal('30000'), Decimal('30200'), "ExchangeA"),
-    Quote(TradingPair.from_string("ETH/USDT"), Decimal('2000'), Decimal('2020'), "ExchangeA"),
-    # ExchangeB
-    Quote(TradingPair.from_string("BTC/USDT"), Decimal('30400'), Decimal('30600'), "ExchangeB"),
-    Quote(TradingPair.from_string("ETH/USDT"), Decimal('2140'), Decimal('2160'), "ExchangeB"),
-]
+pricebook_with_arbitrage = {
+    TradingPair.from_string("BTC/USDT"): [
+        Quote(TradingPair.from_string("BTC/USDT"), Decimal('30000'), Decimal('30200'), "ExchangeA"),
+        Quote(TradingPair.from_string("BTC/USDT"), Decimal('30400'), Decimal('30600'), "ExchangeB"),
+    ],
+    TradingPair.from_string("ETH/USDT"): [
+        Quote(TradingPair.from_string("ETH/USDT"), Decimal('2000'), Decimal('2020'), "ExchangeA"),
+        Quote(TradingPair.from_string("ETH/USDT"), Decimal('2140'), Decimal('2160'), "ExchangeB"),
+    ]
+}
 
-prices_one_exchange = [
-    Quote(TradingPair.from_string("BTC/USDT"), Decimal('30000'), Decimal('30200'), "ExchangeA"),
-    Quote(TradingPair.from_string("ETH/USDT"), Decimal('2000'), Decimal('2020'), "ExchangeA"),
-]
+pricebook_one_exchange = {
+    TradingPair.from_string("BTC/USDT"): [
+        Quote(TradingPair.from_string("BTC/USDT"), Decimal('30000'), Decimal('30200'), "ExchangeA"),
+    ],
+    TradingPair.from_string("ETH/USDT"): [
+        Quote(TradingPair.from_string("ETH/USDT"), Decimal('2000'), Decimal('2020'), "ExchangeA"),
+    ]
+}
 
 
 @pytest.fixture
 def mock_price_repository():
-    repo = AsyncMock()
-    repo.get_quotes = AsyncMock(return_value=prices_with_arbitrage)
-    repo.get_
-    return repo
+    class MockPriceRepository:
+        async def get_pricebook(self, trading_pairs):
+            # Возвращаем заранее подготовленный pricebook
+            return {pair: quotes for pair, quotes in pricebook_with_arbitrage.items() if pair in trading_pairs}
+        async def get_assetbook(self):
+            return {}
+        async def get_marketbook(self):
+            return {}
+        async def close(self):
+            pass
+    return MockPriceRepository()
 
 @pytest.mark.asyncio
 async def test_find_arbitrage_opportunities(mock_price_repository):
     finder = FindArbitrageOpportunitiesUseCase(mock_price_repository)
-    opportunities = await finder.execute(quoted_asset=Asset("USDT"), min_profit=Decimal('100'), min_volume=Decimal('0.01'))
+    trading_pairs = [TradingPair.from_string("BTC/USDT"), TradingPair.from_string("ETH/USDT")]
+    opportunities = await finder.execute(trading_pairs, quoted_asset=Asset("USDT"), min_profit=Decimal('100'), min_volume=Decimal('0.01'))
     assert isinstance(opportunities, list)
     assert len(opportunities) == 2  
     # Ожидаемая прибыль должна быть корректной
@@ -49,9 +63,17 @@ async def test_find_arbitrage_opportunities(mock_price_repository):
 async def test_no_arbitrage_within_one_exchange(mock_price_repository):
     # Все quotes только с одной биржи
  
-    repo = AsyncMock()
-    repo.get_quotes = AsyncMock(return_value=prices_one_exchange)
-    finder = FindArbitrageOpportunitiesUseCase(repo)
-    opportunities = await finder.execute(Asset("USDT"), Decimal('100'), Decimal('0.01'))
+    class MockPriceRepository:
+        async def get_pricebook(self, trading_pairs):
+            return {pair: quotes for pair, quotes in pricebook_one_exchange.items() if pair in trading_pairs}
+        async def get_assetbook(self):
+            return {}
+        async def get_marketbook(self):
+            return {}
+        async def close(self):
+            pass
+    finder = FindArbitrageOpportunitiesUseCase(MockPriceRepository())
+    trading_pairs = [TradingPair.from_string("BTC/USDT"), TradingPair.from_string("ETH/USDT")]
+    opportunities = await finder.execute(trading_pairs, quoted_asset=Asset("USDT"), min_profit=Decimal('100'), min_volume=Decimal('0.01'))
     assert isinstance(opportunities, list)
     assert len(opportunities) == 0  # Не должно быть арбитража внутри одной биржи

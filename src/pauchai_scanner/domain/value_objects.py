@@ -75,7 +75,6 @@ class MarketInfo:
 @dataclass(frozen=True)
 class AssetNetwork:
     asset: Asset
-    exchange: ExchangeId
     network: NetworkId
     withdraw_fee: Decimal
     withdraw_speed: float  # in hours

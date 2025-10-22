@@ -6,10 +6,24 @@ from pauchai_scanner.domain.value_objects import Quote, TradingPair
 
 
 # Базовый интерфейс провайдера бирж
+
 class ExchangeProvider(abc.ABC):
     @abc.abstractmethod
-    async def get_quotes(self, pairs: list[TradingPair]) -> list[Quote]:
-        """Получить котировки для заданных торговых пар с биржи."""
+    async def get_price_book(self, pairs: list[TradingPair]) -> PriceBook:
+        """Получить агрегат котировок для заданных торговых пар с биржи."""
+        pass
+
+    @abc.abstractmethod
+    async def get_market_book(self) -> MarketBook:
+        """Получить агрегат рынков биржи."""
+        pass
+
+    @abc.abstractmethod
+    async def get_asset_book(self) -> AssetBook:
+        """Получить агрегат активов биржи."""
+        pass
+
+    async def close(self):
         pass
 
 

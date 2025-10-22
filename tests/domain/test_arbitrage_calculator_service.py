@@ -1,7 +1,7 @@
 from decimal import Decimal
 import pytest
 
-from pauchai_scanner.domain.arbitrage_calculator_service import ArbitrageCalculatorService
+from pauchai_scanner.domain.arbitrage_calculator_service import InterExchangeSpotArbitrageService
 from pauchai_scanner.domain.value_objects import Asset, TradingPair, Quote, MarketId, MarketType, MarketInfo, AssetInfo, AssetNetwork
 from pauchai_scanner.domain.entities import ArbitrageOpportunity
 
@@ -26,28 +26,46 @@ market_book = {
 
 
 asset_book = {
-    Asset("BTC"): AssetInfo(
+    (Asset("BTC"), "ExchangeA"): AssetInfo(
         asset=Asset("BTC"),
         exchange="ExchangeA",
         networks=[
-            AssetNetwork(asset=Asset("BTC"), exchange="ExchangeA", network="BTC", withdraw_fee=Decimal("0.0005"), withdraw_speed=1.0),
-            AssetNetwork(asset=Asset("BTC"), exchange="ExchangeB", network="BTC", withdraw_fee=Decimal("0.0004"), withdraw_speed=0.5),
+            AssetNetwork(asset=Asset("BTC"), network="BTC", withdraw_fee=Decimal("0.0005"), withdraw_speed=1.0),
         ]
     ),
-    Asset("ETH"): AssetInfo(
+    (Asset("BTC"), "ExchangeB"): AssetInfo(
+        asset=Asset("BTC"),
+        exchange="ExchangeB",
+        networks=[
+            AssetNetwork(asset=Asset("BTC"), network="BTC", withdraw_fee=Decimal("0.0004"), withdraw_speed=0.5),
+        ]
+    ),
+    (Asset("ETH"), "ExchangeA"): AssetInfo(
         asset=Asset("ETH"),
         exchange="ExchangeA",
         networks=[
-            AssetNetwork(asset=Asset("ETH"), exchange="ExchangeA", network="ERC20", withdraw_fee=Decimal("0.005"), withdraw_speed=2.0),
-            AssetNetwork(asset=Asset("ETH"), exchange="ExchangeB", network="ERC20", withdraw_fee=Decimal("0.004"), withdraw_speed=1.5),
+            AssetNetwork(asset=Asset("ETH"), network="ERC20", withdraw_fee=Decimal("0.005"), withdraw_speed=2.0),
         ]
     ),
-    Asset("USDT"): AssetInfo(
+    (Asset("ETH"), "ExchangeB"): AssetInfo(
+        asset=Asset("ETH"),
+        exchange="ExchangeB",
+        networks=[
+            AssetNetwork(asset=Asset("ETH"), network="ERC20", withdraw_fee=Decimal("0.004"), withdraw_speed=1.5),
+        ]
+    ),
+    (Asset("USDT"), "ExchangeA"): AssetInfo(
         asset=Asset("USDT"),
         exchange="ExchangeA",
         networks=[
-            AssetNetwork(asset=Asset("USDT"), exchange="ExchangeA", network="ERC20", withdraw_fee=Decimal("5"), withdraw_speed=1.0),
-            AssetNetwork(asset=Asset("USDT"), exchange="ExchangeB", network="TRC20", withdraw_fee=Decimal("1"), withdraw_speed=0.5),
+            AssetNetwork(asset=Asset("USDT"), network="ERC20", withdraw_fee=Decimal("5"), withdraw_speed=1.0),
+        ]
+    ),
+    (Asset("USDT"), "ExchangeB"): AssetInfo(
+        asset=Asset("USDT"),
+        exchange="ExchangeB",
+        networks=[
+            AssetNetwork(asset=Asset("USDT"), network="TRC20", withdraw_fee=Decimal("1"), withdraw_speed=0.5),
         ]
     ),
 }
@@ -57,7 +75,7 @@ async def test_arbitrage_calculator_service_basic():
     asset_usdt = Asset("USDT")
     price_book = prices_with_arbitrage
 
-    service = ArbitrageCalculatorService(price_book, asset_book, market_book)
+    service = InterExchangeSpotArbitrageService(price_book, asset_book, market_book)
     opportunities = service.calculate([asset_usdt], min_profit=Decimal('90'), min_volume=Decimal('0.01'))
     assert isinstance(opportunities, list)
     assert len(opportunities) == 2

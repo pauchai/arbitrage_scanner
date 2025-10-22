@@ -1,10 +1,11 @@
 from pauchai_scanner.domain.aggregators import PriceBook, AssetBook, MarketBook
-from pauchai_scanner.domain.value_objects import TradingPair, Asset
+from pauchai_scanner.domain.value_objects import TradingPair, Asset, MarketId, MarketType, AssetInfo
 from pauchai_scanner.domain.entities import ArbitrageOpportunity
 from decimal import Decimal
 from typing import List
 
-class ArbitrageCalculatorService:
+
+class InterExchangeSpotArbitrageService:
     """
     Доменный сервис для расчета арбитражных возможностей между биржами.
     Входные данные: агрегаты PriceBook, AssetBook, MarketBook
@@ -17,7 +18,6 @@ class ArbitrageCalculatorService:
 
     def calculate(self, quoted_assets: List[Asset], min_profit: Decimal, min_volume: Decimal) -> List[ArbitrageOpportunity]:
         opportunities = []
-        from pauchai_scanner.domain.value_objects import MarketId, MarketType, AssetInfo
         for pair, quotes in self.price_book.items():
             if pair.quote not in quoted_assets:
                 continue
@@ -36,22 +36,18 @@ class ArbitrageCalculatorService:
                     withdraw_speed = None
                     sell_network = None
                     buy_network = None
-                    asset_info = self.asset_book.get(pair.quote, None)
-                    if asset_info:
-                        # Сеть для вывода (минимальная комиссия на бирже продажи)
-                        sell_network_obj = None
-                        sell_networks = [n for n in asset_info.networks if n.exchange == sell_quote.exchange]
-                        if sell_networks:
-                            sell_network_obj = min(sell_networks, key=lambda n: n.withdraw_fee)
-                            withdraw_fee = sell_network_obj.withdraw_fee
-                            withdraw_speed = sell_network_obj.withdraw_speed
-                            sell_network = sell_network_obj.network
-                        # Сеть для ввода (минимальная комиссия на бирже покупки)
-                        buy_network_obj = None
-                        buy_networks = [n for n in asset_info.networks if n.exchange == buy_quote.exchange]
-                        if buy_networks:
-                            buy_network_obj = min(buy_networks, key=lambda n: n.withdraw_fee)
-                            buy_network = buy_network_obj.network
+                    # Получаем AssetInfo для биржи продажи
+                    asset_info_sell = self.asset_book.get((pair.quote, sell_quote.exchange), None)
+                    if asset_info_sell and asset_info_sell.networks:
+                        sell_network_obj = min(asset_info_sell.networks, key=lambda n: n.withdraw_fee)
+                        withdraw_fee = sell_network_obj.withdraw_fee
+                        withdraw_speed = sell_network_obj.withdraw_speed
+                        sell_network = sell_network_obj.network
+                    # Получаем AssetInfo для биржи покупки
+                    asset_info_buy = self.asset_book.get((pair.quote, buy_quote.exchange), None)
+                    if asset_info_buy and asset_info_buy.networks:
+                        buy_network_obj = min(asset_info_buy.networks, key=lambda n: n.withdraw_fee)
+                        buy_network = buy_network_obj.network
                     profit = sell_quote.bid - buy_quote.ask - buy_fee - sell_fee - (withdraw_fee if withdraw_fee is not None else Decimal("0"))
                     if profit >= min_profit:
                         opportunity = ArbitrageOpportunity(

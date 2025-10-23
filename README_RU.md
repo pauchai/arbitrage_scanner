@@ -1,7 +1,7 @@
 # Arbitrage Scanner
 
 > **Ведётся разработка PRO-версии!**
-> Подробнее: https://github.com/arbitrage-scanner
+> Подробнее: https://github.com/arbitrage-scanner-pro
 > Вопросы и предложения — Telegram: [@montepauk](https://t.me/montepauk)
 
 ## Описание

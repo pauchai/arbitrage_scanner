@@ -3,7 +3,7 @@
 [Русская версия README](./README_RU.md)
 
 > **PRO version is under development!**
-> See: https://github.com/arbitrage-scanner
+> See: https://github.com/arbitrage-scanner-pro
 > For inquiries, contact Telegram: [@montepauk](https://t.me/montepauk)
 
 ## Description

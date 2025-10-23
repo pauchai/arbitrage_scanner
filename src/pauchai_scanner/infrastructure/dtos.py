@@ -1,43 +1,38 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class CCXTTickerDTO(BaseModel):
     symbol: str
     bid: float | None
     ask: float | None
-    exchange: str
 
-    class ConfigDict:
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")
 
 class CCXTMarketDTO(BaseModel):
     type: str
     symbol: str
     maker: float | None
     taker: float | None
-    percentage: bool | None
+    percentage: bool | None = None
 
-    class ConfigDict:
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")
+
 
 class CCXTNetworkLimitsDTO(BaseModel):
-    withdraw: dict[str, float] | None
-    deposit: dict[str, float] | None
+    withdraw: dict[str, float | None] | None = None
+    deposit: dict[str, float | None] | None = None
 
-    class ConfigDict:
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")
+
 class CCXTNetworkDTO(BaseModel):
     id: str
-    network: str 
     active: bool
     deposit: bool 
     withdraw: bool
-    fee: float 
-    precision: int 
-    limits: CCXTNetworkLimitsDTO 
+    fee: float | None = None         # ← иногда приходит строка или null
+    limits: CCXTNetworkLimitsDTO | None = None  # ← иногда вообще отсутствует
+    model_config = ConfigDict(extra="ignore")
 
-    class ConfigDict:
-        extra = "ignore"
 
 class CCXTCurrencyDTO(BaseModel):
     code: str
@@ -45,7 +40,6 @@ class CCXTCurrencyDTO(BaseModel):
     active: bool | None
     fee: float | None
     precision: int | None
-    networks: list[CCXTNetworkDTO] | None
+    networks: dict[str, CCXTNetworkDTO] | None = None
 
-    class ConfigDict:
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")

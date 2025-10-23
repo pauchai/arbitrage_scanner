@@ -7,8 +7,8 @@ from pauchai_scanner.domain.value_objects import Asset, TradingPair
 from pauchai_scanner.infrastructure.providers import CCXTExchangeProvider
 from pauchai_scanner.infrastructure.repositories import PriceRepositoryImpl
 
-#logging.basicConfig(level=logging.DEBUG)
-
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("ccxt").setLevel(logging.WARNING)
 
 merged_config = {
     name: {**config[name], **config_credentials.get(name, {})}
@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--quoted-asset", type=str, help="Актив для арбитража (например USDT)")
     parser.add_argument("--min-profit", type=float, default=0, help="Минимальная прибыль")
     parser.add_argument("--min-volume", type=float, default=0.01, help="Минимальный объём")
-    parser.add_argument("--pairs", type=str, nargs="*", help="Торговые пары через пробел (например BTC/USDT ETH/USDT)")
+    parser.add_argument("--pairs", type=str, nargs="*", default=None, help="Торговые пары через пробел (например BTC/USDT ETH/USDT)")
     args = parser.parse_args()
 
     if args.show_config:
@@ -41,7 +41,7 @@ def main():
             print(f"Exchange '{exch}' not found in config.")
         return
 
-    if args.find_arb:        
+    if args.find_arb or (not args.show_config and not args.exchange):        
         # Выбираем только включённые биржи
         enabled_exchanges = [name for name, cfg in merged_config.items() if cfg.get('enabled')]
         providers = []

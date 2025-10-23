@@ -9,29 +9,43 @@ from pauchai_scanner.domain.interfaces import  ExchangeProvider, PriceRepository
 
 class PriceRepositoryImpl(PriceRepository):
     def __init__(self, providers: list[ExchangeProvider]):
-        self.providers = {type(provider).__name__: provider for provider in providers}
+        # ❗ Лучше использовать exchange_id вместо имени класса
+        self.providers = {p.exchange_id: p for p in providers}
 
     async def get_pricebook(self, pairs: list[TradingPair] = None) -> PriceBook:
-        quotes = []
-        tasks = [
-            provider.get_price_book(pairs)
-            for provider in self.providers.values()
-        ]
+        tasks = [p.get_price_book(pairs) for p in self.providers.values()]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
+        pricebook: PriceBook = {}
         for result in results:
             if isinstance(result, dict):
-                for pair, qs in result.items():
-                    quotes.extend(qs)
-            elif isinstance(result, list):
-                quotes.extend(result)
-            else:
-                pass
-
-        pricebook = {}
-        for q in quotes:
-            pricebook.setdefault(q.trading_pair, []).append(q)
+                for pair, quotes in result.items():
+                    pricebook.setdefault(pair, []).extend(quotes)
         return pricebook
+
+    async def get_marketbook(self) -> MarketBook:
+        tasks = [p.get_market_book() for p in self.providers.values()]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        merged: MarketBook = {}
+        for result in results:
+            if isinstance(result, dict):
+                merged.update(result)
+        return merged
+
+    async def get_assetbook(self) -> AssetBook:
+        tasks = [p.get_asset_book() for p in self.providers.values()]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        merged: AssetBook = {}
+        for result in results:
+            if isinstance(result, dict):
+                merged.update(result)
+        return merged
+
+    async def close(self):
+        tasks = [provider.close() for provider in self.providers.values()]
+        await asyncio.gather(*tasks, return_exceptions=True)
 
 
 

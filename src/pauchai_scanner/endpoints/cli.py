@@ -24,6 +24,7 @@ def main():
     parser.add_argument("--min-profit", type=float, default=0, help="Минимальная прибыль")
     parser.add_argument("--min-volume", type=float, default=0.01, help="Минимальный объём")
     parser.add_argument("--pairs", type=str, nargs="*", default=None, help="Торговые пары через пробел (например BTC/USDT ETH/USDT)")
+    parser.add_argument("--interval", type=float, default=10.0, help="Задержка между циклами арбитража (сек)")
     args = parser.parse_args()
 
     if args.show_config:
@@ -63,13 +64,20 @@ def main():
         else:
             pairs = None
         async def run():
+            usecase = FindArbitrageOpportunitiesUseCase(repo)
             try:
-                usecase = FindArbitrageOpportunitiesUseCase(repo)
-                opportunities = await usecase.execute(quoted_asset=quoted_asset, min_profit=min_profit, min_volume=min_volume, trading_pairs=pairs)
-                if not opportunities:
-                    print("Арбитражные возможности не найдены.")
-                for opp in opportunities:
-                    print(f"{opp.pair.symbol()}: {opp.buy_exchange} -> {opp.sell_exchange}, profit={opp.estimated_profit}")
+                while True:
+                    opportunities = await usecase.execute(
+                        quoted_asset=quoted_asset,
+                        min_profit=min_profit,
+                        min_volume=min_volume,
+                        trading_pairs=pairs
+                    )
+                    if not opportunities:
+                        print("Арбитражные возможности не найдены.")
+                    for opp in opportunities:
+                        print(f"{opp.pair.symbol()}: {opp.buy_exchange} -> {opp.sell_exchange}, profit={opp.estimated_profit:.2f}")
+                    await asyncio.sleep(args.interval)
             finally:
                 # Закрытие всех провайдеров
                 for provider in providers:

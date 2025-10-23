@@ -1,4 +1,4 @@
-import ccxt
+import ccxt.async_support as ccxt
 from pauchai_scanner.domain.aggregators import AssetBook, MarketBook, PriceBook
 from pauchai_scanner.domain.exceptions import ExchangeUnavailable
 from pauchai_scanner.domain.interfaces import ExchangeProvider
@@ -7,12 +7,16 @@ from pauchai_scanner.infrastructure.dtos import CCXTCurrencyDTO, CCXTMarketDTO, 
 
 
 class CCXTExchangeProvider(ExchangeProvider):
-    def __init__(self, exchange_id: str, **kwargs):
+    def __init__(self, exchange_id: str, ccxt_kwargs: dict):
         self.exchange_id = exchange_id
-        self.exchange = getattr(ccxt, exchange_id)(**kwargs)
+        self.exchange = getattr(ccxt, exchange_id)(ccxt_kwargs)
 
     async def get_price_book(self, pairs: list[TradingPair]) -> PriceBook:
-        symbols = [pair.symbol() for pair in pairs]
+        if not pairs:
+            symbols = None
+        else:
+            symbols = [pair.symbol() for pair in pairs]
+            
         if not self.exchange.has.get('fetchTickers', False):
             raise ExchangeUnavailable(f"Exchange {self.exchange_id} не поддерживает fetchTickers().")
 

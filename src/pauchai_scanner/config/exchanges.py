@@ -1,11 +1,12 @@
 import os
 
+from dotenv import load_dotenv
+load_dotenv()
 config = {
     'binance': {
         'enabled': True,
         'ccxt': {
-            'testnet': False,
-            'enableRateLimit': True
+            # 'enableRateLimit': True
         },
         'custom': {
             'url_templates': {
@@ -16,8 +17,6 @@ config = {
     'bybit': {
         'enabled': True,
         'ccxt': {
-            'testnet': False,
-            'enableRateLimit': True,
             'options': {'defaultType': 'spot'}
         },
         'custom': {
@@ -29,8 +28,6 @@ config = {
     'bingx': {
         'enabled': True,
         'ccxt': {
-            'testnet': False,
-            'enableRateLimit': True
         },
         'custom': {
             'url_templates': {
@@ -41,8 +38,6 @@ config = {
     'kucoin': {
         'enabled': True,
         'ccxt': {
-            'testnet': False,
-            'enableRateLimit': True
         },
         'custom': {
             'url_templates': {
@@ -53,8 +48,6 @@ config = {
     'okx': {
         'enabled': False ,  # временно отключена из-за проблем с API
         'ccxt': {
-            'testnet': False,
-            'enableRateLimit': True
         },
         'custom': {
             'url_templates': {  
@@ -65,8 +58,6 @@ config = {
     'mexc': {
         'enabled': True,# временно отключена нет API ключей
         'ccxt': {
-            'testnet': False,
-            'enableRateLimit': True
         },
         'custom': {
             'url_templates': {
@@ -77,8 +68,6 @@ config = {
     'htx': {
         'enabled': True,# временно отключена нет API ключей
         'ccxt': {
-            'testnet': False,
-            'enableRateLimit': True
         },
         'custom': {
             'url_templates': {
@@ -89,8 +78,6 @@ config = {
     "bitmart": {
         'enabled': True,# временно отключена нет API ключей
         'ccxt': {
-            'testnet': False,
-            'enableRateLimit': True
         },
         'custom': {
             'url_templates': {
@@ -151,9 +138,4 @@ config_credentials = {
             'secret': os.getenv("BITMART_API_SECRET")
         }
     }
-}
-
-merged_config = {
-    name: {**config[name], **config_credentials.get(name, {})}
-    for name in config
 }

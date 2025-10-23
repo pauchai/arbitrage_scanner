@@ -1,6 +1,14 @@
 import argparse
-from pauchai_scanner.config.exchanges import config
-from pauchai_scanner.config.credentials import config_credentials
+import logging
+from pauchai_scanner.config.exchanges import config, config_credentials
+import asyncio
+from pauchai_scanner.application.find_opportunities_usecase import FindArbitrageOpportunitiesUseCase
+from pauchai_scanner.domain.value_objects import Asset, TradingPair
+from pauchai_scanner.infrastructure.providers import CCXTExchangeProvider
+from pauchai_scanner.infrastructure.repositories import PriceRepositoryImpl
+
+#logging.basicConfig(level=logging.DEBUG)
+
 
 merged_config = {
     name: {**config[name], **config_credentials.get(name, {})}
@@ -33,12 +41,7 @@ def main():
             print(f"Exchange '{exch}' not found in config.")
         return
 
-    if args.find_arb:
-        import asyncio
-        from pauchai_scanner.application.find_opportunities_usecase import FindArbitrageOpportunitiesUseCase
-        from pauchai_scanner.domain.value_objects import Asset, TradingPair
-        from pauchai_scanner.infrastructure.providers import CCXTExchangeProvider
-        from pauchai_scanner.infrastructure.repositories import PriceRepositoryImpl
+    if args.find_arb:        
         # Выбираем только включённые биржи
         enabled_exchanges = [name for name, cfg in merged_config.items() if cfg.get('enabled')]
         providers = []
@@ -46,22 +49,32 @@ def main():
             ccxt_kwargs = merged_config[name].get('ccxt', {})
             credentials = merged_config[name].get('credentials', {})
             ccxt_kwargs = {**ccxt_kwargs, **credentials}
+            logging.info(f"Инициализация провайдера для биржи {name} с параметрами: {ccxt_kwargs}")
             try:
-                providers.append(CCXTExchangeProvider(name, **ccxt_kwargs))
+                providers.append(CCXTExchangeProvider(name, ccxt_kwargs))
             except Exception as e:
                 print(f"Ошибка инициализации провайдера {name}: {e}")
         repo = PriceRepositoryImpl(providers)
         quoted_asset = Asset(args.quoted_asset) if args.quoted_asset else Asset("USDT")
         min_profit = args.min_profit
         min_volume = args.min_volume
-        pairs = [TradingPair.from_string(p) for p in args.pairs] if args.pairs else [TradingPair.from_string("BTC/USDT")]
+        if args.pairs:
+            pairs = [TradingPair.from_string(p) for p in args.pairs]
+        else:
+            pairs = None
         async def run():
-            usecase = FindArbitrageOpportunitiesUseCase(repo)
-            opportunities = await usecase.execute(quoted_asset=quoted_asset, min_profit=min_profit, min_volume=min_volume, trading_pairs=pairs)
-            if not opportunities:
-                print("Арбитражные возможности не найдены.")
-            for opp in opportunities:
-                print(f"{opp.pair.symbol()}: {opp.buy_exchange} -> {opp.sell_exchange}, profit={opp.estimated_profit}")
+            try:
+                usecase = FindArbitrageOpportunitiesUseCase(repo)
+                opportunities = await usecase.execute(quoted_asset=quoted_asset, min_profit=min_profit, min_volume=min_volume, trading_pairs=pairs)
+                if not opportunities:
+                    print("Арбитражные возможности не найдены.")
+                for opp in opportunities:
+                    print(f"{opp.pair.symbol()}: {opp.buy_exchange} -> {opp.sell_exchange}, profit={opp.estimated_profit}")
+            finally:
+                # Закрытие всех провайдеров
+                for provider in providers:
+                    if hasattr(provider, "close") and callable(provider.close):
+                        await provider.close()
         asyncio.run(run())
         return
 

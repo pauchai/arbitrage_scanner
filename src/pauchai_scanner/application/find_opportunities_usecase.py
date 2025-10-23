@@ -7,7 +7,6 @@ from pauchai_scanner.domain.value_objects import Asset, TradingPair
 from pauchai_scanner.domain.aggregators import PriceBook, AssetBook, MarketBook
 from pauchai_scanner.domain.arbitrage_calculator_service import InterExchangeSpotArbitrageService
         
-logging.basicConfig(level=logging.DEBUG)
 class FindArbitrageOpportunitiesUseCase:
 
     def __init__(self, price_repo: PriceRepository):

@@ -1,5 +1,7 @@
 # Arbitrage Scanner
 
+[Русская версия README](./README_RU.md)
+
 > **PRO version is under development!**
 > See: https://github.com/arbitrage-scanner
 > For inquiries, contact Telegram: [@montepauk](https://t.me/montepauk)

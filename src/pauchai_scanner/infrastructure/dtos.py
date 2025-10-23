@@ -39,7 +39,7 @@ class CCXTCurrencyDTO(BaseModel):
     name: str | None
     active: bool | None
     fee: float | None
-    precision: int | None
+    precision: float | None = None
     networks: dict[str, CCXTNetworkDTO] | None = None
 
     model_config = ConfigDict(extra="ignore")

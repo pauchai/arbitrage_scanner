@@ -77,6 +77,15 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# Project-specific ignores
+notebooks/.ipynb_checkpoints/
+src/**/__pycache__/
+tests/**/__pycache__/
+.vscode/
+.env
+.venv/
+Постановка задачи.md
+
 # IPython
 profile_default/
 ipython_config.py

@@ -5,9 +5,9 @@ load_dotenv()
 config = {
     'binance': {
         'enabled': True,
-        'ccxt': {
-            # 'enableRateLimit': True
-        },
+            'ccxt': {
+                'options': {'defaultType': 'spot'},
+            },
         'custom': {
             'url_templates': {
                 'spot': "https://www.binance.com/en/trade/{base_currency}_{quoted_currency}?type=spot"
@@ -16,9 +16,9 @@ config = {
     },
     'bybit': {
         'enabled': True,
-        'ccxt': {
-            'options': {'defaultType': 'spot'}
-        },
+            'ccxt': {
+                'options': {'defaultType': 'spot'},
+            },
         'custom': {
             'url_templates': {
                 'spot': "https://www.bybit.com/trade/spot/{base_currency}/{quoted_currency}"
@@ -27,8 +27,9 @@ config = {
     },
     'bingx': {
         'enabled': True,
-        'ccxt': {
-        },
+            'ccxt': {
+                'options': {'defaultType': 'spot'},
+            },
         'custom': {
             'url_templates': {
                 'spot': "https://bingx.com/en/spot/{base_currency}{quoted_currency}/"
@@ -37,8 +38,9 @@ config = {
     },
     'kucoin': {
         'enabled': True,
-        'ccxt': {
-        },
+            'ccxt': {
+                'options': {'defaultType': 'spot'},
+            },
         'custom': {
             'url_templates': {
                 'spot': "https://www.kucoin.com/trade/{base_currency}-{quoted_currency}"
@@ -47,8 +49,9 @@ config = {
     },
     'okx': {
         'enabled': False ,  # временно отключена из-за проблем с API
-        'ccxt': {
-        },
+            'ccxt': {
+                'options': {'defaultType': 'spot'},
+            },
         'custom': {
             'url_templates': {  
                 'spot': "https://www.okx.com/trade/{base_currency}-{quoted_currency}"
@@ -57,8 +60,9 @@ config = {
     },
     'mexc': {
         'enabled': True,# временно отключена нет API ключей
-        'ccxt': {
-        },
+            'ccxt': {
+                'options': {'defaultType': 'spot'},
+            },
         'custom': {
             'url_templates': {
                 'spot': "https://www.mexc.com/exchange/{base_currency}_{quoted_currency}"
@@ -67,8 +71,9 @@ config = {
     },
     'htx': {
         'enabled': True,# временно отключена нет API ключей
-        'ccxt': {
-        },
+            'ccxt': {
+                'options': {'defaultType': 'spot'},
+            },
         'custom': {
             'url_templates': {
                 'spot': "https://www.hathor.exchange/trade/{base_currency}-{quoted_currency}"
@@ -77,8 +82,9 @@ config = {
     },
     "bitmart": {
         'enabled': True,# временно отключена нет API ключей
-        'ccxt': {
-        },
+            'ccxt': {
+            'options': {'defaultType': 'spot'},
+            },
         'custom': {
             'url_templates': {
                 'spot': "https://www.bitmart.com/trade/en?symbol={base_currency}_{quoted_currency}"

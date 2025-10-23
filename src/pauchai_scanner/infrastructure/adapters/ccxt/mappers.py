@@ -5,15 +5,31 @@ from pauchai_scanner.domain.value_objects import (
 from pauchai_scanner.infrastructure.dtos import CCXTMarketDTO, CCXTCurrencyDTO, CCXTTickerDTO
 from decimal import Decimal
 
+CCXT_TYPE_MAP = {
+    "spot": "spot",
+    "margin": "margin",
+    "future": "futures",
+    "futures": "futures",
+    "swap": "perpetual",     # важно!
+    "perpetual": "perpetual",
+    "option": "option",
+}
 
 def map_market(dto: CCXTMarketDTO, exchange: ExchangeId) -> tuple[MarketId, MarketInfo]:
-    """Мэппинг DTO CCXT → доменная структура MarketInfo."""
+    raw_type = dto.type or "spot"
+    normalized_type = CCXT_TYPE_MAP.get(raw_type)
+
+    if not normalized_type:
+        # например, придёт "move", "prediction", "linear", "inverse" или что-то экзотическое
+        # ты не упадёшь — просто fallback
+        print(f"[WARN] Unknown market type from CCXT: {raw_type}, fallback to SPOT")
+        normalized_type = "spot"
+
+    market_type = MarketType(normalized_type)
+
     pair = TradingPair.from_string(dto.symbol)
-    market_id = MarketId(
-        pair=pair,
-        exchange=exchange,
-        market_type=MarketType(dto.type) if dto.type else MarketType.SPOT
-    )
+    market_id = MarketId(pair=pair, exchange=exchange, market_type=market_type)
+
     market_info = MarketInfo(
         market_id=market_id,
         maker_fee=Decimal(dto.maker or 0),

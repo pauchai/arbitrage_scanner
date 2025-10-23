@@ -1,7 +1,7 @@
 import pytest
 from pauchai_scanner.infrastructure.providers import CCXTExchangeProvider
 from pauchai_scanner.domain.value_objects import TradingPair, Asset, MarketId, MarketType
-from pauchai_scanner.infrastructure.dtos import CCXTCurrencyDTO, CCXTMarketDTO
+from pauchai_scanner.infrastructure.adapters.ccxt.dtos import CCXTCurrencyDTO, CCXTMarketDTO
 import pauchai_scanner.infrastructure.providers as providers
 
 @pytest.mark.asyncio

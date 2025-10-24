@@ -4,7 +4,7 @@ from pauchai_scanner.domain.exceptions import ExchangeUnavailable
 from pauchai_scanner.domain.interfaces import ExchangeProvider
 from pauchai_scanner.domain.value_objects import Quote, Quote, TradingPair
 from pauchai_scanner.infrastructure.adapters.ccxt.mappers import map_asset, map_market, map_price
-from pauchai_scanner.infrastructure.dtos import CCXTCurrencyDTO, CCXTMarketDTO, CCXTNetworkDTO, CCXTTickerDTO
+from pauchai_scanner.infrastructure.adapters.ccxt.dtos import CCXTCurrencyDTO, CCXTMarketDTO, CCXTNetworkDTO, CCXTTickerDTO
 import logging
 
 

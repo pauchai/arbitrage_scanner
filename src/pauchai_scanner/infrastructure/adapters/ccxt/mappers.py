@@ -2,7 +2,7 @@ from pauchai_scanner.domain.value_objects import (
     Asset, AssetInfo, AssetNetwork, ExchangeId,
     MarketId, MarketInfo, MarketType, Quote, TradingPair
 )
-from pauchai_scanner.infrastructure.dtos import CCXTMarketDTO, CCXTCurrencyDTO, CCXTTickerDTO
+from pauchai_scanner.infrastructure.adapters.ccxt.dtos import CCXTMarketDTO, CCXTCurrencyDTO, CCXTTickerDTO
 from decimal import Decimal
 
 CCXT_TYPE_MAP = {

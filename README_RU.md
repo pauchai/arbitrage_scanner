@@ -7,6 +7,16 @@
 ## Описание
 Arbitrage Scanner — сервис для поиска межбиржевых арбитражных возможностей на криптовалютных биржах. Проект реализован на принципах DDD/TDD, поддерживает интеграцию с CCXT, покрыт тестами, имеет CLI и легко расширяется.
 
+### Основные возможности
+- Поиск арбитражных возможностей между биржами
+- Интеграция с реальными провайдерами через CCXT
+- Гибкая работа с торговыми парами (pairs=None)
+- Устойчивость к ошибкам парсинга тикеров
+- Корректная работа DTO (Pydantic v2)
+- CLI для запуска и анализа арбитража
+- Мэпперы для преобразования DTO → агрегаторы
+- Полное покрытие unit и integration тестами
+
 ### Поддерживаемые биржи
 
 [![Binance](https://github.com/user-attachments/assets/e9419b93-ccb0-46aa-9bff-c883f096274b)](https://www.binance.com/activity/referral-entry/CPA?ref=CPA_00JM9DOEP3)
@@ -17,16 +27,6 @@ Arbitrage Scanner — сервис для поиска межбиржевых а
 [![MEXC](https://user-images.githubusercontent.com/1294454/137283979-8b2a818d-8633-461b-bfca-de89e8c446b2.jpg)](https://promote.mexc.com/r/QpfKQfw8)
 [![HTX](https://user-images.githubusercontent.com/1294454/76137448-22748a80-604e-11ea-8069-6e389271911d.jpg)](https://www.htx.com/invite/ru-ru/1f?invite_code=4g7jd223)
 [![BitMart](https://github.com/user-attachments/assets/0623e9c4-f50e-48c9-82bd-65c3908c3a14)](https://www.bitmart.com/invite/cVxrKu)
-
-### Основные возможности
-- Поиск арбитражных возможностей между биржами
-- Интеграция с реальными провайдерами через CCXT
-- Гибкая работа с торговыми парами (pairs=None)
-- Устойчивость к ошибкам парсинга тикеров
-- Корректная работа DTO (Pydantic v2)
-- CLI для запуска и анализа арбитража
-- Мэпперы для преобразования DTO → агрегаторы
-- Полное покрытие unit и integration тестами
 
 ### Структура проекта
 - `src/` — исходный код
